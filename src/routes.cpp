@@ -5,10 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <json-c/json.h>
+#include <winsock2.h>
+#include "json.hpp"
 #include "routes.h"
 #include "server.h"
 #include "user.h"
+
+using json = nlohmann::json;
 
 void handle_request(const char* raw_request, SOCKET client_socket) {
     HttpRequest request;
@@ -51,23 +54,19 @@ void handle_get_users(SOCKET client_socket) {
     User* users = get_all_users(&count);
     HttpResponse response;
 
-    json_object* json_array = json_object_new_array();
+    json json_array = json::array();
     for (int i = 0; i < count; i++) {
-        json_object* user_obj = json_object_new_object();
-        json_object_object_add(user_obj, "id",
-            json_object_new_int(users[i].id));
-        json_object_object_add(user_obj, "name",
-            json_object_new_string(users[i].name));
-        json_object_object_add(user_obj, "lastname",
-            json_object_new_string(users[i].lastname));
-        json_object_array_add(json_array, user_obj);
+        json user_obj = {
+            {"id", users[i].id},
+            {"name", users[i].name},
+            {"lastname", users[i].lastname}
+        };
+        json_array.push_back(user_obj);
     }
 
-    const char* json_str = json_object_to_json_string(json_array);
-    prepare_http_response(&response, 200, "application/json", json_str);
+    std::string json_str = json_array.dump();
+    prepare_http_response(&response, 200, "application/json", json_str.c_str());
     send_http_response(client_socket, &response);
-
-    json_object_put(json_array);
 }
 
 void handle_get_user_by_id(int user_id, SOCKET client_socket) {
@@ -75,18 +74,14 @@ void handle_get_user_by_id(int user_id, SOCKET client_socket) {
     User* user = get_user_by_id(user_id);
 
     if (user) {
-        json_object* user_obj = json_object_new_object();
-        json_object_object_add(user_obj, "id",
-            json_object_new_int(user->id));
-        json_object_object_add(user_obj, "name",
-            json_object_new_string(user->name));
-        json_object_object_add(user_obj, "lastname",
-            json_object_new_string(user->lastname));
+        json user_obj = {
+            {"id", user->id},
+            {"name", user->name},
+            {"lastname", user->lastname}
+        };
 
-        const char* json_str = json_object_to_json_string(user_obj);
-        prepare_http_response(&response, 200, "application/json", json_str);
-
-        json_object_put(user_obj);
+        std::string json_str = user_obj.dump();
+        prepare_http_response(&response, 200, "application/json", json_str.c_str());
     } else {
         prepare_http_response(&response, 400, "application/json",
                               "{\"error\": \"User not found\"}");
@@ -97,78 +92,79 @@ void handle_get_user_by_id(int user_id, SOCKET client_socket) {
 
 void handle_post_user(const char* body, SOCKET client_socket) {
     HttpResponse response;
-    json_object* parsed_json = json_tokener_parse(body);
+    json parsed_json;
 
-    if (parsed_json &&
-        json_object_object_get_ex(parsed_json, "name", NULL) &&
-        json_object_object_get_ex(parsed_json, "lastname", NULL)) {
+    try {
+        parsed_json = json::parse(body);
+    } catch (json::parse_error& e) {
+        prepare_http_response(&response, 400, "application/json",
+                              "{\"error\": \"Invalid request body\"}");
+        send_http_response(client_socket, &response);
+        return;
+    }
 
-        const char* name = json_object_get_string(
-            json_object_object_get(parsed_json, "name"));
-        const char* lastname = json_object_get_string(
-            json_object_object_get(parsed_json, "lastname"));
+    if (parsed_json.contains("name") && parsed_json.contains("lastname")) {
+        const std::string& name = parsed_json["name"];
+        const std::string& lastname = parsed_json["lastname"];
 
-        int new_id = add_user(name, lastname);
+        int new_id = add_user(name.c_str(), lastname.c_str());
 
-        char response_body[128];
-        snprintf(response_body, sizeof(response_body),
-                 "{\"id\": %d}", new_id);
+        json response_body = {{"id", new_id}};
+        std::string response_str = response_body.dump();
 
-        prepare_http_response(&response, 201, "application/json", response_body);
+        prepare_http_response(&response, 201, "application/json", response_str.c_str());
     } else {
         prepare_http_response(&response, 400, "application/json",
                               "{\"error\": \"Invalid request body\"}");
     }
 
     send_http_response(client_socket, &response);
-    json_object_put(parsed_json);
 }
 
 void handle_patch_user(int user_id, const char* body, SOCKET client_socket) {
     HttpResponse response;
-    json_object* parsed_json = json_tokener_parse(body);
+    json parsed_json;
 
-    if (parsed_json &&
-        (json_object_object_get_ex(parsed_json, "name", NULL) ||
-         json_object_object_get_ex(parsed_json, "lastname", NULL))) {
-
-        const char* name = json_object_object_get_ex(parsed_json, "name", NULL)
-            ? json_object_get_string(json_object_object_get(parsed_json, "name"))
-            : NULL;
-
-        const char* lastname = json_object_object_get_ex(parsed_json, "lastname", NULL)
-            ? json_object_get_string(json_object_object_get(parsed_json, "lastname"))
-            : NULL;
-
-        if (update_user_partial(user_id, name, lastname)) {
-            prepare_http_response(&response, 204, "application/json", "");
-        } else {
-            prepare_http_response(&response, 400, "application/json",
-                                  "{\"error\": \"User not found\"}");
-        }
-    } else {
+    try {
+        parsed_json = json::parse(body);
+    } catch (json::parse_error& e) {
         prepare_http_response(&response, 400, "application/json",
                               "{\"error\": \"Invalid request body\"}");
+        send_http_response(client_socket, &response);
+        return;
+    }
+
+    const char* name = parsed_json.contains("name") ? parsed_json["name"].get<std::string>().c_str() : NULL;
+    const char* lastname = parsed_json.contains("lastname") ? parsed_json["lastname"].get<std::string>().c_str() : NULL;
+
+    if (update_user_partial(user_id, name, lastname)) {
+        prepare_http_response(&response, 204, "application/json", "");
+    } else {
+        prepare_http_response(&response, 400, "application/json",
+                              "{\"error\": \"User not found\"}");
     }
 
     send_http_response(client_socket, &response);
-    json_object_put(parsed_json);
 }
 
 void handle_put_user(int user_id, const char* body, SOCKET client_socket) {
     HttpResponse response;
-    json_object* parsed_json = json_tokener_parse(body);
+    json parsed_json;
 
-    if (parsed_json &&
-        json_object_object_get_ex(parsed_json, "name", NULL) &&
-        json_object_object_get_ex(parsed_json, "lastname", NULL)) {
+    try {
+        parsed_json = json::parse(body);
+    } catch (json::parse_error& e) {
+        prepare_http_response(&response, 400, "application/json",
+                              "{\"error\": \"Invalid request body\"}");
+        send_http_response(client_socket, &response);
+        return;
+    }
 
-        const char* name = json_object_get_string(
-            json_object_object_get(parsed_json, "name"));
-        const char* lastname = json_object_get_string(
-            json_object_object_get(parsed_json, "lastname"));
+    if (parsed_json.contains("name") && parsed_json.contains("lastname")) {
+        const std::string& name = parsed_json["name"];
+        const std::string& lastname = parsed_json["lastname"];
 
-        update_user_full(user_id, name, lastname);
+        update_user_full(user_id, name.c_str(), lastname.c_str());
         prepare_http_response(&response, 204, "application/json", "");
     } else {
         prepare_http_response(&response, 400, "application/json",
@@ -176,7 +172,6 @@ void handle_put_user(int user_id, const char* body, SOCKET client_socket) {
     }
 
     send_http_response(client_socket, &response);
-    json_object_put(parsed_json);
 }
 
 void handle_delete_user(int user_id, SOCKET client_socket) {

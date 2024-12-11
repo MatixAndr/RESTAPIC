@@ -8,7 +8,7 @@
 #include <winsock2.h>
 #include "server.h"
 
-void handle_request(const char* raw_request, SOCKET client_socket); // To jest do ogólnych requestów
+void handle_request(const char* raw_request, SOCKET client_socket);
 
 void handle_get_users(SOCKET client_socket);
 void handle_get_user_by_id(int user_id, SOCKET client_socket);

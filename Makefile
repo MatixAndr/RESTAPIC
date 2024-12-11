@@ -1,8 +1,8 @@
-CC = gcc
+CC = g++
 CFLAGS = -Wall -Wextra
-LDFLAGS = -lws2_32 -ljson-c
+LDFLAGS = -lws2_32
 
-SRCS = src/main.c src/routes.c src/server.c src/user.c
+SRCS = src/main.cpp src/routes.cpp src/server.cpp src/user.cpp
 OBJS = $(SRCS:.c=.o)
 
 TARGET = restapic
@@ -10,12 +10,12 @@ TARGET = restapic
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-    $(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 %.o: %.c
-    $(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-    rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET)
 
 .PHONY: all clean

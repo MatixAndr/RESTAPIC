@@ -9,5 +9,5 @@ REQUIRED:
   - JSON-C `pacman -S mingw-w64-x86_64-json-c`
 
 ```bash
-gcc -o server main.c server.c routes.c user.c -ljson-c -lws2_32
+gcc -o server main.cpp server.cpp routes.cpp user.cpp -ljson-c -lws2_32
 ```
