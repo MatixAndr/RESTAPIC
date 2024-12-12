@@ -9,6 +9,7 @@
 #include <iostream>
 #include <vector>
 #include <functional>
+#include <cstdlib>
 
 struct Test {
     std::string name;
@@ -33,6 +34,11 @@ public:
             }
         }
         std::cout << "Passed " << passed << " out of " << tests.size() << " tests." << std::endl;
+        if (passed == tests.size()) {
+            std::exit(0);
+        } else {
+            std::exit(1);
+        }
     }
 
 private:
