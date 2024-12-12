@@ -16,6 +16,6 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	cmd /C del /Q $(subst /,\,$(OBJS)) $(TARGET).exe
+	cmd /C "del /Q $(subst /,\,$(OBJS)) $(TARGET).exe"
 
 .PHONY: all clean
