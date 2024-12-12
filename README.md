@@ -2,6 +2,10 @@
 
 Prosty serwer REST API napisany w C++ implementujący podstawowe operacje CRUD (Create, Read, Update, Delete) dla zarządzania użytkownikami.
 
+| Build Status | Windows 10 Build | Windows 11 Build | License | Last Commit | Issues |
+|--------------|------------------|------------------|---------|-------------|--------|
+| ![Build Status](https://github.com/MatixAndr09/RESTAPIC/actions/workflows/makefile.yml/badge.svg) | ![Windows 10 Build](https://github.com/MatixAndr09/RESTAPIC/actions/workflows/makefile.yml/badge.svg?branch=master&event=push) | ![Windows 11 Build](https://github.com/MatixAndr09/RESTAPIC/actions/workflows/makefile.yml/badge.svg?branch=master&event=push) | ![License](https://img.shields.io/github/license/MatixAndr09/RESTAPIC) | ![Last Commit](https://img.shields.io/github/last-commit/MatixAndr09/RESTAPIC) | ![Issues](https://img.shields.io/github/issues/MatixAndr09/RESTAPIC) |
+
 ## Opis
 
 RESTAPIC to lekki i wydajny serwer REST API zaimplementowany w C++ z wykorzystaniem WinSock2 dla obsługi połączeń sieciowych. Projekt oferuje podstawową funkcjonalność zarządzania użytkownikami poprzez standardowe endpointy HTTP.
