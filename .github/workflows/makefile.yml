@@ -7,24 +7,6 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build-windows-7:
-    runs-on: windows-2016
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: choco install make
-
-      - name: Build
-        run: make
-
-      - name: Run unit tests
-        run: .\restapic.exe --test u
-
-      - name: Run integration tests
-        run: .\restapic.exe --test i
-
   build-windows-10:
     runs-on: windows-2019
 
