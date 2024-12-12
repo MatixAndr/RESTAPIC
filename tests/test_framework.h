@@ -2,7 +2,6 @@
 // Created by MateuszAndruszkiewic on 12.12.2024.
 //
 
-// test_framework.h
 #ifndef TEST_FRAMEWORK_H
 #define TEST_FRAMEWORK_H
 
@@ -27,18 +26,14 @@ public:
         for (const auto& test : tests) {
             try {
                 test.func();
-                std::cout << "[PASS] " << test.name << std::endl;
+                std::cout << "\033[32m[PASS]\033[0m " << test.name << std::endl; // Zielony kolor dla PASS
                 passed++;
             } catch (const std::exception& e) {
-                std::cout << "[FAIL] " << test.name << ": " << e.what() << std::endl;
+                std::cout << "\033[31m[FAIL]\033[0m " << test.name << ": " << e.what() << std::endl; // Czerwony kolor dla FAIL
             }
         }
         std::cout << "Passed " << passed << " out of " << tests.size() << " tests." << std::endl;
-        if (passed == tests.size()) {
-            std::exit(0);
-        } else {
-            std::exit(1);
-        }
+        std::exit(passed == tests.size() ? 0 : 1);
     }
 
 private:
