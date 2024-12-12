@@ -16,9 +16,9 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	del /Q $(subst /,\,$(OBJS)) $(TARGET).exe
 
 cleaner:
-	rm -f src/*.o tests/*.o
+	del /Q src\*.o tests\*.o
 
 .PHONY: all clean cleaner
