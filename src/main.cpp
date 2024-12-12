@@ -13,7 +13,10 @@ void start_tests(const char* test_type) {
         run_unit_tests();
     } else if (strcmp(test_type, "i") == 0) {
         run_integration_tests();
-    } else {
+    } else if (strcmp(test_type, "all") == 0) {
+    	run_unit_tests();
+        run_integration_tests();
+    }else {
         printf("Invalid test type. Use 'u' for unit tests or 'i' for integration tests.\n");
     }
 }

@@ -27,5 +27,7 @@ typedef struct {
 int parse_http_request(const char* raw_request, HttpRequest* request);
 void prepare_http_response(HttpResponse* response, int status_code, const char* content_type, const char* body);
 void send_http_response(SOCKET client_socket, const HttpResponse* response);
+HttpResponse get_last_response();
 
 #endif // SERVER_H
+

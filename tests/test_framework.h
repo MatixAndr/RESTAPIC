@@ -21,19 +21,20 @@ public:
         tests.push_back({name, func});
     }
 
-    void run() {
+    int run() {
         int passed = 0;
+        std::cout << "==================== Tests status: ====================" << std::endl;
         for (const auto& test : tests) {
             try {
                 test.func();
-                std::cout << "\033[32m[PASS]\033[0m " << test.name << std::endl; // Zielony kolor dla PASS
+                std::cout << "\033[32m( PASSED )\033[0m " << test.name << std::endl;
                 passed++;
             } catch (const std::exception& e) {
-                std::cout << "\033[31m[FAIL]\033[0m " << test.name << ": " << e.what() << std::endl; // Czerwony kolor dla FAIL
+                std::cout << "\033[31m( FAILED )\033[0m " << test.name << ": " << e.what() << std::endl;
             }
         }
-        std::cout << "Passed " << passed << " out of " << tests.size() << " tests." << std::endl;
-        std::exit(passed == tests.size() ? 0 : 1);
+        std::cout << "========== Passed " << passed << " out of " << tests.size() << " tests ==========" << std::endl;
+        return passed;
     }
 
 private:

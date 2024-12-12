@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include "server.h"
 
+static HttpResponse last_response;
+
 int parse_http_request(const char* raw_request, HttpRequest* request) {
     char* request_copy = strdup(raw_request);
     char* saveptr;
@@ -43,11 +45,18 @@ void prepare_http_response(HttpResponse* response, int status_code,
         case 201: strcpy(response->status_message, "Created"); break;
         case 204: strcpy(response->status_message, "No Content"); break;
         case 400: strcpy(response->status_message, "Bad Request"); break;
+        case 404: strcpy(response->status_message, "Not Found"); break;
+        case 405: strcpy(response->status_message, "Method Not Allowed"); break;
+        case 413: strcpy(response->status_message, "Payload Too Large"); break;
+        case 500: strcpy(response->status_message, "Internal Server Error"); break;
         default: strcpy(response->status_message, "Unknown"); break;
     }
 
     strncpy(response->content_type, content_type, sizeof(response->content_type) - 1);
     strncpy(response->body, body, MAX_RESPONSE_LENGTH - 1);
+
+    // Update the last_response
+    memcpy(&last_response, response, sizeof(HttpResponse));
 }
 
 void send_http_response(SOCKET client_socket, const HttpResponse* response) {
@@ -67,3 +76,8 @@ void send_http_response(SOCKET client_socket, const HttpResponse* response) {
 
     send(client_socket, full_response, strlen(full_response), 0);
 }
+
+HttpResponse get_last_response() {
+    return last_response;
+}
+
