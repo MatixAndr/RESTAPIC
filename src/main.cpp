@@ -1,11 +1,24 @@
-//
-// Created by MateuszAndruszkiewic on 3.12.2024.
-//
 #include <winsock2.h>
 #include <stdio.h>
+#include <string.h>
+#include <thread>
 #include "routes.h"
 
-int main() {
+// Declarations of test functions
+extern int run_unit_tests();
+extern int run_integration_tests();
+
+void start_tests(const char* test_type) {
+    if (strcmp(test_type, "u") == 0) {
+        run_unit_tests();
+    } else if (strcmp(test_type, "i") == 0) {
+        run_integration_tests();
+    } else {
+        printf("Invalid test type. Use 'u' for unit tests or 'i' for integration tests.\n");
+    }
+}
+
+int main(int argc, char* argv[]) {
     WSADATA wsa;
     SOCKET server_socket, client_socket;
     struct sockaddr_in server, client;
@@ -24,6 +37,7 @@ int main() {
     // Create a socket
     if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
         printf("Could not create socket : %d", WSAGetLastError());
+        return 1;
     }
 
     printf("Socket created.\n");
@@ -47,6 +61,11 @@ int main() {
     // Accept and incoming connection
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
+
+    if (argc == 3 && strcmp(argv[1], "--test") == 0) {
+        std::thread test_thread(start_tests, argv[2]);
+        test_thread.detach();
+    }
 
     while ((client_socket = accept(server_socket, (struct sockaddr*)&client, &c)) != INVALID_SOCKET) {
         puts("Connection accepted");
