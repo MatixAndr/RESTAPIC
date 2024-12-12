@@ -18,4 +18,7 @@ $(TARGET): $(OBJS)
 clean:
 	rm -f $(OBJS) $(TARGET)
 
-.PHONY: all clean
+cleaner:
+	rm -f src/*.o tests/*.o
+
+.PHONY: all clean cleaner
