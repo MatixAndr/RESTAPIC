@@ -4,7 +4,6 @@
 #include <thread>
 #include "routes.h"
 
-// Declarations of test functions
 extern int run_unit_tests();
 extern int run_integration_tests();
 

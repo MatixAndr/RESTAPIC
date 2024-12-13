@@ -34,7 +34,7 @@ public:
             }
         }
         std::cout << "========== Passed " << passed << " out of " << tests.size() << " tests ==========" << std::endl;
-        return passed;
+        std::exit(passed == tests.size() ? 0 : 1);
     }
 
 private:
